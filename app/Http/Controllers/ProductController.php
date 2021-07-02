@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\ProductsImport;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use App\Imports\ProductsImport;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -19,7 +20,6 @@ class ProductController extends Controller
     {
         //
         $products = Product::all();
-
         return view('products.index', compact('products'));
     }
 
@@ -42,14 +42,25 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         //
+        $validated = $request->validate([
+            'number' => 'required|unique:products|numeric|min:1',
+            'name' => 'required|max:40',
+        ]);
+
+        $product = new Product();
+        $product->number = $validated['number'];
+        $product->name = $validated['name'];
+        $product->save();
+
+        $message = 'Product successfully added';
+        return redirect()->route('products.index')->with('success', $message);
     }
 
     public function import(Request $request)
     {
         Excel::import(new ProductsImport, $request->file('file_products'));
 
-        $message = 'Data imported successfully';
-
+        $message = 'Product data imported successfully';
         return redirect()->route('products.index')->with('success', $message);
     }
 
@@ -62,6 +73,11 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         //
+    }
+
+    public function get(Product $product)
+    {
+        return $product;
     }
 
     /**
@@ -85,6 +101,22 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         //
+        $validated = $request->validate([
+            'number' => [
+                'required',
+                Rule::unique('products')->ignore($product),
+                'numeric',
+                'min:1',
+            ],
+            'name' => 'required|max:40',
+        ]);
+
+        $product->number = $validated['number'];
+        $product->name = $validated['name'];
+        $product->save();
+
+        $message = 'Product successfully updated';
+        return redirect()->route('products.index')->with('success', $message);
     }
 
     /**
@@ -96,6 +128,10 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         //
+        $product->delete();
+
+        $message = 'Product successfully deleted';
+        return redirect()->route('products.index')->with('success', $message);
     }
 
     public function wipe()
@@ -104,8 +140,7 @@ class ProductController extends Controller
         Product::truncate();
         Schema::enableForeignKeyConstraints();
 
-        $message = 'All data wiped successfully';
-
+        $message = 'All product data wiped successfully';
         return redirect()->route('products.index')->with('success', $message);
     }
 }

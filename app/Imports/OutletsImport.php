@@ -4,8 +4,9 @@ namespace App\Imports;
 
 use App\Models\Outlet;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class OutletsImport implements ToModel
+class OutletsImport implements ToModel, WithHeadingRow
 {
     /**
     * @param array $row
@@ -16,9 +17,9 @@ class OutletsImport implements ToModel
     {
         return new Outlet([
             //
-            'number' => $row[0],
-            'name' => $row[1],
-            'owner' => $row[2],
+            'number' => $row['number'],
+            'name' => $row['name'],
+            'owner' => $row['owner'],
         ]);
     }
 }

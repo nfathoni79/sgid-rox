@@ -2,23 +2,36 @@
 
 namespace App\Imports;
 
+use App\Models\Outlet;
+use App\Models\Product;
 use App\Models\ProductOrder;
-use Maatwebsite\Excel\Concerns\ToModel;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class ProductOrdersImport implements ToModel
+class ProductOrdersImport implements ToCollection, WithHeadingRow
 {
-    /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
-    public function model(array $row)
+    public function collection(Collection $rows)
     {
-        return new ProductOrder([
-            //
-            'outlet_id' => $row[0],
-            'product_id' => $row[1],
-            'quantity' => $row[2],
-        ]);
+        foreach ($rows as $row) {
+            $outlet_id = $this->getOutletId($row['outlet_number']);
+            $product_id = $this->getProductId($row['product_number']);
+            $quantity = $row['quantity'];
+
+            $outlet = Outlet::find($outlet_id);
+            $products = $outlet->products();
+            $products->syncWithoutDetaching([$product_id]);
+            $products->find($product_id)->pivot->increment('quantity', $quantity);
+        }
+    }
+
+    private function getOutletId($number)
+    {
+        return Outlet::where('number', $number)->first()->id;
+    }
+
+    private function getProductId($number)
+    {
+        return Product::where('number', $number)->first()->id;
     }
 }

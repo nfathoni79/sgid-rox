@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\ProductOrdersImport;
+use App\Models\Outlet;
+use App\Models\Product;
 use App\Models\ProductOrder;
 use Illuminate\Http\Request;
-use App\Imports\ProductOrdersImport;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Schema;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductOrderController extends Controller
 {
@@ -19,8 +21,9 @@ class ProductOrderController extends Controller
     {
         //
         $productOrders = ProductOrder::all();
-
-        return view('product-orders.index', compact('productOrders'));
+        $outlets = Outlet::orderBy('number')->get();
+        $products = Product::orderBy('number')->get();
+        return view('product-orders.index', compact('productOrders', 'outlets', 'products'));
     }
 
     /**
@@ -42,14 +45,26 @@ class ProductOrderController extends Controller
     public function store(Request $request)
     {
         //
+        $validated = $request->validate([
+            'outlet_id' => 'required',
+            'product_id' => 'required',
+            'quantity' => 'required|numeric|min:0',
+        ]);
+
+        $outlet = Outlet::find($validated['outlet_id']);
+        $outlet->products()->syncWithoutDetaching([
+            $validated['product_id'] => ['quantity' => $validated['quantity']]
+        ]);
+
+        $message = 'Product Order successfully added';
+        return redirect()->route('product-orders.index')->with('success', $message);
     }
 
     public function import(Request $request)
     {
         Excel::import(new ProductOrdersImport, $request->file('file_product_orders'));
 
-        $message = 'Data imported successfully';
-
+        $message = 'Product order data imported successfully';
         return redirect()->route('product-orders.index')->with('success', $message);
     }
 
@@ -62,6 +77,12 @@ class ProductOrderController extends Controller
     public function show(ProductOrder $productOrder)
     {
         //
+    }
+
+    public function get(ProductOrder $productOrder)
+    {
+        //
+        return $productOrder;
     }
 
     /**
@@ -85,6 +106,19 @@ class ProductOrderController extends Controller
     public function update(Request $request, ProductOrder $productOrder)
     {
         //
+        $validated = $request->validate([
+            'quantity' => 'required|numeric|min:0',
+        ]);
+
+        if ($request->input('change') == '') {
+            $productOrder->quantity = $validated['quantity'];
+        } else {
+            $productOrder->quantity += $request->input('change');
+        }
+        $productOrder->save();
+
+        $message = 'Product order successfully updated';
+        return redirect()->route('product-orders.index')->with('success', $message);
     }
 
     /**
@@ -96,6 +130,10 @@ class ProductOrderController extends Controller
     public function destroy(ProductOrder $productOrder)
     {
         //
+        $productOrder->delete();
+
+        $message = 'Product order successfully deleted';
+        return redirect()->route('product-orders.index')->with('success', $message);
     }
 
     public function wipe()
@@ -104,8 +142,7 @@ class ProductOrderController extends Controller
         ProductOrder::truncate();
         Schema::enableForeignKeyConstraints();
 
-        $message = 'All data wiped successfully';
-
+        $message = 'All product order data wiped successfully';
         return redirect()->route('product-orders.index')->with('success', $message);
     }
 }
