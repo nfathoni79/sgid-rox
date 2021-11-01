@@ -23,14 +23,14 @@
         {{-- Best Outlet --}}
         <div class="col-xl-3 col-md-6 mb-4">
             <x-dash-card title="Best Outlet" icon="fas fa-store" color="primary">
-                {{ $bestOutlet->number}}: {{ $bestOutlet->name }}
+                {{ $bestOutlet->number ?? '-' }}: {{ $bestOutlet->name ?? '-' }}
             </x-dash-card>
         </div>
 
         {{-- Best Product --}}
         <div class="col-xl-3 col-md-6 mb-4">
             <x-dash-card title="Best Product" icon="fas fa-fish" color="success">
-                {{ $bestProduct->name }}
+                {{ $bestProduct->name ?? '-' }}
             </x-dash-card>
         </div>
 

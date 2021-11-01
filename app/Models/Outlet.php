@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\NewOrder;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductOrder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Outlet extends Model
 {
@@ -32,5 +33,10 @@ class Outlet extends Model
     {
         return $this->belongsToMany(Product::class, 'product_orders')
             ->withPivot('quantity')->withTimestamps();
+    }
+
+    public function newOrders()
+    {
+        return $this->hasMany(NewOrder::class);
     }
 }

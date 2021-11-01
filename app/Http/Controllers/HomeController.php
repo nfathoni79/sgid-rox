@@ -19,17 +19,23 @@ class HomeController extends Controller
         //
         $outlets = Outlet::all();
 
-        $bestOutlet = Order::selectRaw('outlet_id, sum(total) as sum_total')
+        $orders = Order::selectRaw('outlet_id, sum(total) as sum_total')
             ->groupBy('outlet_id')
-            ->orderByDesc('sum_total')
-            ->first()
-            ->outlet;
+            ->orderByDesc('sum_total');
 
-        $bestProduct = ProductOrder::selectRaw('product_id, sum(quantity) as sum_quantity')
+        $bestOutlet = null;
+        if ($orders->exists()) {
+            $bestOutlet = $orders->first()->outlet;
+        }
+
+        $productOrders = ProductOrder::selectRaw('product_id, sum(quantity) as sum_quantity')
             ->groupBy('product_id')
-            ->orderByDesc('sum_quantity')
-            ->first()
-            ->product;
+            ->orderByDesc('sum_quantity');
+
+        $bestProduct = null;
+        if ($productOrders->exists()) {
+            $bestProduct = $productOrders->first()->product;
+        }
 
         $totalOrders = Order::sum('total');
         $totalProducts = ProductOrder::sum('quantity');

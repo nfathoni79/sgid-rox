@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Imports\ProductsImport;
+use App\Models\NewOrder;
 use App\Models\Product;
+use App\Models\ProductOrder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
@@ -138,6 +141,8 @@ class ProductController extends Controller
     {
         Schema::disableForeignKeyConstraints();
         Product::truncate();
+        ProductOrder::truncate();
+        NewOrder::truncate();
         Schema::enableForeignKeyConstraints();
 
         $message = 'All product data wiped successfully';

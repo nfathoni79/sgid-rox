@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Imports\OutletsImport;
+use App\Models\NewOrder;
+use App\Models\Order;
 use App\Models\Outlet;
+use App\Models\ProductOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
@@ -143,6 +146,9 @@ class OutletController extends Controller
     {
         Schema::disableForeignKeyConstraints();
         Outlet::truncate();
+        Order::truncate();
+        ProductOrder::truncate();
+        NewOrder::truncate();
         Schema::enableForeignKeyConstraints();
 
         $message = 'All outlet data wiped successfully';

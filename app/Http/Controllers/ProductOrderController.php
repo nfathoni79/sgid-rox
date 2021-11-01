@@ -138,9 +138,7 @@ class ProductOrderController extends Controller
 
     public function wipe()
     {
-        Schema::disableForeignKeyConstraints();
         ProductOrder::truncate();
-        Schema::enableForeignKeyConstraints();
 
         $message = 'All product order data wiped successfully';
         return redirect()->route('product-orders.index')->with('success', $message);
