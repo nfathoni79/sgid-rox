@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Outlet;
+use App\Models\NewOrder;
 use App\Models\Order;
+use App\Models\Outlet;
 use App\Models\ProductOrder;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -19,16 +21,18 @@ class HomeController extends Controller
         //
         $outlets = Outlet::all();
 
-        $orders = Order::selectRaw('outlet_id, sum(total) as sum_total')
+        $outletOrders = NewOrder::select('outlet_id')
+            ->selectRaw('sum(quantity * price) as total')
             ->groupBy('outlet_id')
-            ->orderByDesc('sum_total');
+            ->orderByDesc('total');
 
         $bestOutlet = null;
-        if ($orders->exists()) {
-            $bestOutlet = $orders->first()->outlet;
+        if ($outletOrders->exists()) {
+            $bestOutlet = $outletOrders->first()->outlet;
         }
 
-        $productOrders = ProductOrder::selectRaw('product_id, sum(quantity) as sum_quantity')
+        $productOrders = NewOrder::select('product_id')
+            ->selectRaw('sum(quantity) as sum_quantity')
             ->groupBy('product_id')
             ->orderByDesc('sum_quantity');
 
@@ -37,8 +41,8 @@ class HomeController extends Controller
             $bestProduct = $productOrders->first()->product;
         }
 
-        $totalOrders = Order::sum('total');
-        $totalProducts = ProductOrder::sum('quantity');
+        $totalOrders = NewOrder::sum(DB::raw('quantity * price'));
+        $totalProducts = NewOrder::sum('quantity');
 
         return view('home.index', compact('outlets', 'bestOutlet', 'bestProduct', 'totalOrders', 'totalProducts'));
     }

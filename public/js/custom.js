@@ -24,6 +24,8 @@ for (var i = 0; i < 50; i++) {
 var definedBackgroundColors = [
     '#566dcd', '#4074fe', '#4199e1', '#40b2cc', '#40c6ae', '#40c381', '#9bcc3f',
     '#fde841', '#fa8a48', '#e2676a', '#ed4c5b', '#ef4085', '#bc3b8d', '#716ca2',
+    '#566dcd', '#4074fe', '#4199e1', '#40b2cc', '#40c6ae', '#40c381', '#9bcc3f',
+    '#fde841', '#fa8a48', '#e2676a', '#ed4c5b', '#ef4085', '#bc3b8d', '#716ca2',
 ];
 
 var currencyFormatter = new Intl.NumberFormat('id-ID', {
