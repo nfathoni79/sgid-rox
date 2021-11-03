@@ -41,19 +41,12 @@
         icon="fas fa-fw fa-fish"
         text="Products"/>
 
-    <!-- Nav Item - Orders -->
+    <!-- Nav Item - New Orders -->
     <x-nav-item
-        :active="request()->routeIs('orders.*')"
-        :href="route('orders.index')"
+        :active="request()->routeIs('new-orders.*')"
+        :href="route('new-orders.index')"
         icon="fas fa-fw fa-redo"
         text="Orders"/>
-
-    <!-- Nav Item - Product Orders -->
-    <x-nav-item
-        :active="request()->routeIs('product-orders.*')"
-        :href="route('product-orders.index')"
-        icon="fas fa-fw fa-fish"
-        text="Product Orders"/>
 
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">

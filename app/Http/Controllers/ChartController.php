@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Outlet;
+use App\Models\NewOrder;
 use App\Models\Order;
+use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\ProductOrder;
+use Illuminate\Http\Request;
 
 class ChartController extends Controller
 {
@@ -67,14 +68,18 @@ class ChartController extends Controller
 
     public function summary()
     {
-        $orders_total = Order::selectRaw('outlet_id, sum(total) as total_all')->groupBy('outlet_id')->get();
+        $outletOrders = NewOrder::select('outlet_id')
+            ->selectRaw('sum(quantity * price) as total')
+            ->groupBy('outlet_id')
+            ->orderBy('outlet_id')
+            ->get();
 
         $labels = [];
         $data = [];
 
-        foreach ($orders_total as $order_total) {
-            array_push($labels, $order_total->outlet->number);
-            array_push($data, (int)$order_total->total_all);
+        foreach ($outletOrders as $order) {
+            array_push($labels, $order->outlet->number);
+            array_push($data, (int)$order->total);
         }
 
         $result = array('labels' => $labels, 'data' =>  $data);
@@ -84,12 +89,17 @@ class ChartController extends Controller
 
     public function outlet($id)
     {
-        $orders = Order::where('outlet_id', $id)->orderBy('date')->get();
+        $outletOrders = NewOrder::select('date')
+            ->selectRaw('sum(quantity * price) as total')
+            ->where('outlet_id', $id)
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
 
         $labels = [];
         $data = [];
 
-        foreach ($orders as $order) {
+        foreach ($outletOrders as $order) {
             array_push($labels, $order->date);
             array_push($data, $order->total);
         }
@@ -101,14 +111,18 @@ class ChartController extends Controller
 
     public function productSummary()
     {
-        $productOrders_total = ProductOrder::selectRaw('product_id, sum(quantity) as quantity_all')->groupBy('product_id')->get();
+        $productOrders = NewOrder::select('product_id')
+            ->selectRaw('sum(quantity) as sum_quantity')
+            ->groupBy('product_id')
+            ->orderBy('product_id')
+            ->get();
 
         $labels = [];
         $data = [];
 
-        foreach ($productOrders_total as $productOrder_total) {
-            array_push($labels, $productOrder_total->product->name);
-            array_push($data, (int)$productOrder_total->quantity_all);
+        foreach ($productOrders as $order) {
+            array_push($labels, $order->product->name);
+            array_push($data, (int)$order->sum_quantity);
         }
 
         $result = array('labels' => $labels, 'data' => $data);
@@ -118,14 +132,19 @@ class ChartController extends Controller
 
     public function productOutlet($id)
     {
-        $productOrders = ProductOrder::where('outlet_id', $id)->orderBy('product_id')->get();
+        $productOrders = NewOrder::select('product_id')
+            ->selectRaw('sum(quantity) as sum_quantity')
+            ->where('outlet_id', $id)
+            ->groupBy('product_id')
+            ->orderBy('product_id')
+            ->get();
 
         $labels = [];
         $data = [];
 
-        foreach ($productOrders as $productOrder) {
-            array_push($labels, $productOrder->product->name);
-            array_push($data, $productOrder->quantity);
+        foreach ($productOrders as $order) {
+            array_push($labels, $order->product->name);
+            array_push($data, $order->sum_quantity);
         }
 
         $result = array('labels' => $labels, 'data' =>  $data);
